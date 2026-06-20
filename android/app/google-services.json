@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "642894985847",
+    "project_id": "incaxiasapp",
+    "storage_bucket": "incaxiasapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642894985847:android:714befc4cebd2c4c876472",
+        "android_client_info": {
+          "package_name": "com.example.incaxias"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsTsbMCDo3NVDrDdY98vLNVOgtsD81V3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642894985847:android:f274401c8fe21b60876472",
+        "android_client_info": {
+          "package_name": "com.example.incaxias_appcx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsTsbMCDo3NVDrDdY98vLNVOgtsD81V3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
