@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProdutoDetalhePage extends StatelessWidget {
@@ -47,8 +46,8 @@ class ProdutoDetalhePage extends StatelessWidget {
           final imagemUrl = produto['imagemUrl'] ?? '';
           final nome = produto['nome'] ?? '';
           final preco = (produto['preco'] ?? 0).toDouble();
-          final precoPromocional = (produto['precoPromocional'] ?? preco)
-              .toDouble();
+          final precoPromocional =
+              (produto['precoPromocional'] ?? preco).toDouble();
           final promocaoAtiva = produto['promocaoAtiva'] ?? false;
 
           final descricao = produto['descricao'] ?? '';
@@ -118,7 +117,6 @@ class ProdutoDetalhePage extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   SliverToBoxAdapter(
                     child: Container(
                       padding: const EdgeInsets.all(20),
@@ -152,7 +150,6 @@ class ProdutoDetalhePage extends StatelessWidget {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-
                                     if (promocaoAtiva)
                                       const Icon(
                                         Icons.star,
@@ -162,7 +159,6 @@ class ProdutoDetalhePage extends StatelessWidget {
                                   ],
                                 ),
                               ),
-
                               promocaoAtiva
                                   ? Column(
                                       crossAxisAlignment:
@@ -260,7 +256,6 @@ class ProdutoDetalhePage extends StatelessWidget {
                   ),
                 ],
               ),
-
               if (whatsapp.isNotEmpty)
                 Positioned(
                   bottom: 24,
@@ -281,7 +276,7 @@ class ProdutoDetalhePage extends StatelessWidget {
                       'Olá! Tenho interesse no produto $nome.',
                     ),
                     icon: const Icon(
-                      FlutterIcons.whatsapp_faw5d,
+                      Icons.message,
                       size: 26,
                       color: Colors.white,
                     ),

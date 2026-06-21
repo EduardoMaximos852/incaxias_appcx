@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 import 'package:incaxias_appcx/pages/bares/bares_detalhes_page.dart';
 import 'package:incaxias_appcx/theme/app_colors.dart';
 import 'package:incaxias_appcx/theme/app_text.dart';
+import 'package:incaxias_appcx/widgets/whatssap_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BaresPage extends StatefulWidget {
@@ -225,10 +225,9 @@ class _BaresPageState extends State<BaresPage> {
                                         IconButton(
                                           onPressed: () =>
                                               _abrirWhatsApp(whatsapp, nome),
-                                          icon: const Icon(
-                                            FlutterIcons.whatsapp_faw,
-                                            color: Colors.green,
-                                          ),
+                                          icon: const WhatsAppIconSimple(
+                                              size: 28),
+                                          color: Colors.green,
                                         ),
                                     ],
                                   ),

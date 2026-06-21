@@ -28,7 +28,6 @@ class _HomePageState extends State<HomePage> {
             fontSize: 22,
           ),
         ),
-
         iconTheme: const IconThemeData(color: Colors.deepOrange),
         actions: [
           IconButton(
@@ -39,7 +38,6 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       drawer: const Drawer(child: DrawerPage()),
-
       body: SingleChildScrollView(
         child: Column(
           children: [

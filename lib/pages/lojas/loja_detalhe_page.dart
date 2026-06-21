@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 import 'package:incaxias_appcx/theme/app_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'produto_detalhe_page.dart';
@@ -110,15 +109,14 @@ class LojaDetalhePage extends StatelessWidget {
                                   'Olá! Gostaria de informações sobre os produtos da loja $nome.',
                                 ),
                                 icon: const Icon(
-                                  FlutterIcons.whatsapp_faw,
+                                  Icons.chat,
                                   color: Colors.white,
-                                  size: 30,
                                 ),
                                 label: AppText.button(
                                   'Falar com a loja',
                                 ),
                               ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             AppText.subtitle2(
                               "Produtos",
                             ),
@@ -287,7 +285,7 @@ class LojaDetalhePage extends StatelessWidget {
                       'Olá! Gostaria de falar com a loja $nome.',
                     ),
                     child: const Icon(
-                      FlutterIcons.whatsapp_faw,
+                      Icons.chat,
                       color: Colors.white,
                     ),
                   ),

@@ -4,9 +4,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 import 'package:incaxias_appcx/theme/app_colors.dart';
 import 'package:incaxias_appcx/theme/app_text.dart';
+import 'package:incaxias_appcx/widgets/whatssap_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class FarmaciaDetalhe extends StatelessWidget {
@@ -119,7 +119,7 @@ class FarmaciaDetalhe extends StatelessWidget {
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   onPressed: () => _openWhatsapp(whatsapp),
-                  icon: const Icon(FlutterIcons.whatsapp_faw5d),
+                  icon: const WhatsAppIconSimple(size: 28),
                   label: const Text('Chamar no WhatsApp'),
                 ),
 

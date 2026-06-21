@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 import 'package:incaxias_appcx/theme/app_colors.dart';
 import 'package:incaxias_appcx/theme/app_text.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -192,7 +191,7 @@ class _LojasPageState extends State<LojasPage> {
                             if (whatsapp.isNotEmpty)
                               IconButton(
                                 icon: const Icon(
-                                  FlutterIcons.whatsapp_faw5d,
+                                  Icons.message,
                                   color: Colors.green,
                                   size: 28,
                                 ),

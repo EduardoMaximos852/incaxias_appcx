@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:icons_flutter/icons_flutter.dart';
+import 'package:flutter/material.dart';
 import 'package:incaxias_appcx/theme/app_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -12,8 +11,10 @@ class VagaDetalhePage extends StatelessWidget {
     final vagaId = ModalRoute.of(context)!.settings.arguments as String;
 
     return Scaffold(
-      appBar:
-          AppBar(title: AppText.title("Detalhes da Vaga"), centerTitle: true),
+      appBar: AppBar(
+        title: AppText.title("Detalhes da Vaga"),
+        centerTitle: true,
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context).popUntil((route) => route.isFirst);
@@ -21,7 +22,7 @@ class VagaDetalhePage extends StatelessWidget {
         icon: const Icon(Icons.home),
         label: AppText.body("Início"),
       ),
-      body: FutureBuilder<DocumentSnapshot>(
+      body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         future:
             FirebaseFirestore.instance.collection('vagas').doc(vagaId).get(),
         builder: (context, snapshot) {
@@ -29,43 +30,93 @@ class VagaDetalhePage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text("Vaga não encontrada"));
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text("Erro ao carregar a vaga."),
+            );
           }
 
-          final data = snapshot.data!.data() as Map<String, dynamic>;
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(
+              child: Text("Vaga não encontrada"),
+            );
+          }
+
+          final data = snapshot.data!.data();
+          if (data == null) {
+            return const Center(
+              child: Text("Dados da vaga indisponíveis."),
+            );
+          }
+
+          final String titulo = data['titulo']?.toString() ?? '';
+          final String empresa = data['empresa']?.toString() ?? '';
+          final String bairro = data['bairro']?.toString() ?? '';
+          final String endereco = data['endereco']?.toString() ?? '';
+          final String descricao = data['descricao']?.toString() ?? '';
+          final String imageUrl = data['imageUrl']?.toString() ?? '';
+          final String whatsapp = data['whatsapp']?.toString() ?? '';
+          final String emailContato = data['emailContato']?.toString() ?? '';
+
+          final List<String> requisitos = (data['requisitos'] as List?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              [];
+
+          final List<String> beneficios = (data['beneficios'] as List?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              [];
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// 🔹 IMAGEM + TÍTULO
+                /// IMAGEM
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
-                    data['imageUrl'],
-                    height: 160,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 180,
+                              width: double.infinity,
+                              color: Colors.grey.shade300,
+                              child: const Icon(
+                                Icons.broken_image,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          height: 180,
+                          width: double.infinity,
+                          color: Colors.grey.shade300,
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
+                        ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
 
-                AppText.title(
-                  data['titulo'],
-                ),
+                AppText.title(titulo),
+                const SizedBox(height: 8),
 
-                const SizedBox(height: 6),
-
-                AppText.body(
-                  data['empresa'],
-                ),
-
-                const SizedBox(height: 10),
+                AppText.body(empresa),
+                const SizedBox(height: 12),
 
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(
                       Icons.location_on_outlined,
@@ -75,80 +126,94 @@ class VagaDetalhePage extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: AppText.body(
-                        "${data['bairro']} - ${data['endereco']}",
+                        "$bairro - $endereco",
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
 
-                /// 🔹 BOTÕES DE AÇÃO RÁPIDA
+                /// BOTÕES DE AÇÃO
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _actionButton(
-                      icon: FlutterIcons.whatsapp_faw5d,
-                      color: Colors.green,
-                      label: "WhatsApp",
-                      onTap: () => _abrirWhatsApp(data),
-                    ),
-                    _actionButton(
-                      icon: Icons.email_outlined,
-                      color: Colors.blue,
-                      label: "Email",
-                      onTap: () => _abrirEmail(data),
-                    ),
-                    _actionButton(
-                      icon: Icons.map_outlined,
-                      color: Colors.orange,
-                      label: "Rota",
-                      onTap: () => _abrirMapa(data['endereco']),
-                    ),
+                    if (whatsapp.isNotEmpty)
+                      _actionButton(
+                        icon: Icon(
+                          Icons.chat,
+                          color: Colors.green.shade700,
+                        ),
+                        color: Colors.green,
+                        label: "WhatsApp",
+                        onTap: () => _abrirWhatsApp(context, data),
+                      ),
+                    if (emailContato.isNotEmpty)
+                      _actionButton(
+                        icon: Icon(
+                          Icons.email,
+                          color: Colors.blue.shade700,
+                        ),
+                        color: Colors.blue,
+                        label: "Email",
+                        onTap: () => _abrirEmail(context, data),
+                      ),
+                    if (endereco.isNotEmpty)
+                      _actionButton(
+                        icon: const Icon(
+                          Icons.map_outlined,
+                          color: Colors.orange,
+                        ),
+                        color: Colors.orange,
+                        label: "Rota",
+                        onTap: () => _abrirMapa(context, "$endereco, $bairro"),
+                      ),
                   ],
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
 
-                /// 🔹 DESCRIÇÃO
-                _sectionCard(
-                  title: "Descrição da vaga",
-                  child: AppText.body(data['descricao']),
-                ),
+                if (descricao.isNotEmpty)
+                  _sectionCard(
+                    title: "Descrição da vaga",
+                    child: AppText.body(descricao),
+                  ),
 
-                const SizedBox(height: 10),
+                if (descricao.isNotEmpty) const SizedBox(height: 12),
 
-                /// 🔹 REQUISITOS
-                _sectionCard(
-                  title: "Requisitos",
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: List.generate(
-                      (data['requisitos'] as List).length,
-                      (index) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: AppText.body("• ${data['requisitos'][index]}"),
-                      ),
+                if (requisitos.isNotEmpty)
+                  _sectionCard(
+                    title: "Requisitos",
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: requisitos
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: AppText.body("• $item"),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 10),
+                if (requisitos.isNotEmpty) const SizedBox(height: 12),
 
-                /// 🔹 BENEFÍCIOS
-                _sectionCard(
-                  title: "Benefícios",
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: List.generate(
-                      (data['beneficios'] as List).length,
-                      (index) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: AppText.body("• ${data['beneficios'][index]}"),
-                      ),
+                if (beneficios.isNotEmpty)
+                  _sectionCard(
+                    title: "Benefícios",
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: beneficios
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: AppText.body("• $item"),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
-                ),
               ],
             ),
           );
@@ -157,9 +222,8 @@ class VagaDetalhePage extends StatelessWidget {
     );
   }
 
-  /// 🔹 BOTÃO DE AÇÃO PERSONALIZADO
   Widget _actionButton({
-    required IconData icon,
+    required Widget icon,
     required Color color,
     required String label,
     required VoidCallback onTap,
@@ -172,20 +236,27 @@ class VagaDetalhePage extends StatelessWidget {
           child: CircleAvatar(
             radius: 26,
             backgroundColor: color.withOpacity(0.15),
-            child: Icon(icon, color: color),
+            child: icon,
           ),
         ),
         const SizedBox(height: 6),
-        Text(label, style: const TextStyle(fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12),
+        ),
       ],
     );
   }
 
-  /// 🔹 CARD DE SEÇÃO
-  Widget _sectionCard({required String title, required Widget child}) {
+  Widget _sectionCard({
+    required String title,
+    required Widget child,
+  }) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -193,7 +264,10 @@ class VagaDetalhePage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
             child,
@@ -203,27 +277,70 @@ class VagaDetalhePage extends StatelessWidget {
     );
   }
 
-  /// 🔹 AÇÕES EXTERNAS
-  Future<void> _abrirMapa(String endereco) async {
+  Future<void> _abrirMapa(BuildContext context, String endereco) async {
     final url = Uri.parse(
       "https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(endereco)}",
     );
-    await launchUrl(url, mode: LaunchMode.externalApplication);
+
+    final ok = await launchUrl(url, mode: LaunchMode.externalApplication);
+
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Não foi possível abrir o mapa.")),
+      );
+    }
   }
 
-  Future<void> _abrirWhatsApp(Map<String, dynamic> data) async {
-    final number = data['whatsapp'];
+  Future<void> _abrirWhatsApp(
+    BuildContext context,
+    Map<String, dynamic> data,
+  ) async {
+    final number =
+        (data['whatsapp'] ?? '').toString().replaceAll(RegExp(r'\D'), '');
+    final titulo = data['titulo']?.toString() ?? '';
     final msg = Uri.encodeComponent(
-      "Olá, estou interessado na vaga ${data['titulo']}",
+      "Olá, estou interessado na vaga $titulo",
     );
-    final url = Uri.parse("https://wa.me/$number?text=$msg");
-    await launchUrl(url);
+
+    if (number.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("WhatsApp não disponível.")),
+      );
+      return;
+    }
+
+    final url = Uri.parse("https://wa.me/55$number?text=$msg");
+    final ok = await launchUrl(url, mode: LaunchMode.externalApplication);
+
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Não foi possível abrir o WhatsApp.")),
+      );
+    }
   }
 
-  Future<void> _abrirEmail(Map<String, dynamic> data) async {
-    final email = data['emailContato'];
-    final subject = Uri.encodeComponent("Interesse na vaga ${data['titulo']}");
+  Future<void> _abrirEmail(
+    BuildContext context,
+    Map<String, dynamic> data,
+  ) async {
+    final email = (data['emailContato'] ?? '').toString();
+    final titulo = data['titulo']?.toString() ?? '';
+    final subject = Uri.encodeComponent("Interesse na vaga $titulo");
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("E-mail não disponível.")),
+      );
+      return;
+    }
+
     final url = Uri.parse("mailto:$email?subject=$subject");
-    await launchUrl(url);
+    final ok = await launchUrl(url, mode: LaunchMode.externalApplication);
+
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Não foi possível abrir o e-mail.")),
+      );
+    }
   }
 }
