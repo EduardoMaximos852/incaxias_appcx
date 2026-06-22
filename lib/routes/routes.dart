@@ -4,6 +4,8 @@ import 'package:incaxias_appcx/pages/advogado/advogados_page.dart';
 import 'package:incaxias_appcx/pages/bares/bares_page.dart';
 import 'package:incaxias_appcx/pages/clinicas/clinicas_page.dart';
 import 'package:incaxias_appcx/pages/cultura/cultura_page.dart';
+import 'package:incaxias_appcx/pages/educacao/escolas_page.dart';
+import 'package:incaxias_appcx/pages/emergencia/emergencia.dart';
 import 'package:incaxias_appcx/pages/farmacia/farmacia_detalhe_page.dart';
 import 'package:incaxias_appcx/pages/farmacia/farmacia_page.dart';
 import 'package:incaxias_appcx/pages/hamburgueria/hamburguer_page.dart';
@@ -12,6 +14,7 @@ import 'package:incaxias_appcx/pages/instituicoes/prefeitos/prefeitos_page.dart'
 import 'package:incaxias_appcx/pages/lojas/lojas_page.dart';
 import 'package:incaxias_appcx/pages/mototaxi/moto_taxi_page.dart';
 import 'package:incaxias_appcx/pages/petshop/petshop_page.dart';
+import 'package:incaxias_appcx/pages/saude/saude_page.dart';
 import 'package:incaxias_appcx/pages/servicos/servicos_pages.dart';
 import 'package:incaxias_appcx/pages/splash/splash_page.dart';
 import 'package:incaxias_appcx/home_page.dart';
@@ -53,6 +56,10 @@ class AppRoutes {
   static const String aluguel = '/aluguel';
   static const String vagaDetalhe = '/vagaDetalhe';
   static const String detalhesaluguel = '/detalhesaluguel';
+  static const String saude = '/saude';
+  static const String saudedetalhespage = '/saude';
+  static const String emergencia = '/emergencia';
+  static const String educacao = '/educar';
 
   static const String devteam = '/devteam';
 
@@ -82,6 +89,9 @@ class AppRoutes {
     emprego: (context) => const VagasPage(),
     vagaDetalhe: (context) => const VagaDetalhePage(),
     aluguel: (context) => const AluguelPage(),
+    saude: (context) => const SaudePage(),
+    emergencia: (context) => const EmergencyPage(),
+    educacao: (context) => const EscolasPage(),
 
     // Exemplo com lista vazia
     devteam: (context) => const DevTeamPage(empresaId: devteam),
