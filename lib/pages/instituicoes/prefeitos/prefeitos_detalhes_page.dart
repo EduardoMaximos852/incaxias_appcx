@@ -8,6 +8,9 @@ class PrefeitoDetalhePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Recupera o ID único injetado pela tela de listagem
+    final String prefeitoId = data['id'] ?? '';
+
     final String nome = data['nome'] ?? 'Sem nome';
     final String fotoUrl = data['fotoUrl'] ?? '';
     final String inicioMandato = data['inicioMandato'] ?? '';
@@ -31,17 +34,6 @@ class PrefeitoDetalhePage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.blueAccent,
-        icon: const Icon(Icons.history_edu_rounded, color: Colors.white),
-        label: const Text("Histórico", style: TextStyle(color: Colors.white)),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const HistoricoPrefeitosPage()),
-          );
-        },
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -57,24 +49,28 @@ class PrefeitoDetalhePage extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
                 padding: const EdgeInsets.all(4),
-                child: CircleAvatar(
-                  radius: 70,
-                  backgroundColor: Colors.white,
-                  backgroundImage: (fotoUrl.isNotEmpty)
-                      ? NetworkImage(fotoUrl)
-                      : null,
-                  child: (fotoUrl.isEmpty)
-                      ? const Icon(Icons.person, size: 70, color: Colors.grey)
-                      : null,
+                // Adicionado o widget Hero correspondente à listagem principal
+                child: Hero(
+                  tag:
+                      'foto_prefe_$prefeitoId', // Bate exatamente com a tag dinâmica da lista
+                  child: CircleAvatar(
+                    radius: 70,
+                    backgroundColor: Colors.white,
+                    backgroundImage:
+                        (fotoUrl.isNotEmpty) ? NetworkImage(fotoUrl) : null,
+                    child: (fotoUrl.isEmpty)
+                        ? const Icon(Icons.person, size: 70, color: Colors.grey)
+                        : null,
+                  ),
                 ),
               ),
             ),
@@ -105,11 +101,11 @@ class PrefeitoDetalhePage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 6,
-                      offset: const Offset(0, 3),
+                      offset: Offset(0, 3),
                     ),
                   ],
                 ),
@@ -206,18 +202,23 @@ class PrefeitoDetalhePage extends StatelessWidget {
   }
 }
 
-// =====================================
-// 📜 Histórico de Prefeitos - Linha do Tempo
-// =====================================
+// ==========================================================
+// 📜 Histórico de Prefeitos - Linha do Tempo (Corrigida)
+// ==========================================================
 class HistoricoPrefeitosPage extends StatelessWidget {
   const HistoricoPrefeitosPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        title: const Text('Histórico de Prefeitos'),
+        title: const Text(
+          'Histórico de Prefeitos',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blueAccent,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -225,84 +226,91 @@ class HistoricoPrefeitosPage extends StatelessWidget {
             .orderBy('inicioMandato', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('Nenhum prefeito localizado.'));
           }
 
           final docs = snapshot.data!.docs;
 
-          return ListWheelScrollView.useDelegate(
-            itemExtent: 200,
-            perspective: 0.004,
-            physics: const FixedExtentScrollPhysics(),
-            childDelegate: ListWheelChildBuilderDelegate(
-              childCount: docs.length,
-              builder: (context, index) {
-                final data = docs[index].data() as Map<String, dynamic>;
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
 
-                return Card(
-                  elevation: 8,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundImage:
-                              (data['fotoUrl'] != null &&
-                                  data['fotoUrl'].toString().isNotEmpty)
-                              ? NetworkImage(data['fotoUrl'])
-                              : null,
-                          backgroundColor: Colors.grey[300],
-                          child:
-                              (data['fotoUrl'] == null ||
-                                  data['fotoUrl'].toString().isEmpty)
-                              ? const Icon(Icons.person, size: 40)
-                              : null,
+              final String nomePrefeito = data['nome'] ?? 'Sem nome';
+              final String fotoPrefeito = data['fotoUrl'] ?? '';
+              final String partidoPrefeito = data['partido'] ?? 'N/D';
+              final String anosMandato =
+                  "${data['inicioMandato'] ?? ''} - ${data['fimMandato'] ?? ''}";
+
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      // Mantido sem o widget Hero aqui para evitar duplicação em segundo plano na pilha de telas
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.blue.shade100,
+                        backgroundImage: fotoPrefeito.isNotEmpty
+                            ? NetworkImage(fotoPrefeito)
+                            : null,
+                        child: fotoPrefeito.isEmpty
+                            ? const Icon(Icons.person, color: Colors.blueAccent)
+                            : null,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              nomePrefeito,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Gestão: $anosMandato",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            Text(
+                              "Partido: $partidoPrefeito",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue.shade700,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                data['nome'] ?? 'Sem nome',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "${data['inicioMandato'] ?? ''} - ${data['fimMandato'] ?? ''}",
-                                style: const TextStyle(color: Colors.black54),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                data['partido'] ?? '',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.blueAccent,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios_rounded,
+                          size: 16, color: Colors.grey),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           );
         },
       ),

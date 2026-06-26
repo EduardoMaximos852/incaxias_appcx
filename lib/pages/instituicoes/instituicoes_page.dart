@@ -29,7 +29,7 @@ class InstituicoesPage extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.all(8),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // duas colunas
+            crossAxisCount: 3, // três colunas
             childAspectRatio: 0.8,
             crossAxisSpacing: 8,
             mainAxisSpacing: 4,
@@ -37,10 +37,18 @@ class InstituicoesPage extends StatelessWidget {
           itemCount: instituicoes.length,
           itemBuilder: (context, index) {
             final doc = instituicoes[index];
-            final nome = doc['nome'];
-            final imagem = doc['imagem'];
-            final descricao = doc['descricao'];
-            final link = doc['link'];
+
+            // 🌟 PASSO CRUCIAL: Mapeia os dados internos do documento do Firebase
+            final data = doc.data() as Map<String, dynamic>;
+
+            final nome = data['nome'] ?? 'Sem nome';
+            final imagem = data['imagem'] ?? '';
+            final descricao = data['descricao'] ?? 'Sem descrição.';
+            final link = data['link'] ?? '';
+
+            // 🌟 A SOLUÇÃO DA DINÂMICA: Captura o campo de texto 'rota' (Ex: "/prefeitura").
+            // Caso o campo não exista ou esteja nulo no banco, usa o 'doc.id' como plano B.
+            final rotaDinamicadoBanco = data['rota'] ?? doc.id;
 
             return GestureDetector(
               onTap: () {
@@ -52,7 +60,8 @@ class InstituicoesPage extends StatelessWidget {
                       imagem: imagem,
                       descricao: descricao,
                       link: link,
-                      rota: doc.id, // passagem da rota dinâmica
+                      // 🟢 CORREÇÃO: Enviamos a String amigável da rota e não mais o ID aleatório
+                      rota: rotaDinamicadoBanco,
                     ),
                   ),
                 );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:incaxias_appcx/pages/instituicoes/instituicoes_page.dart';
+
 import 'package:incaxias_appcx/pages/turismo/turismo_page.dart';
 import 'package:incaxias_appcx/widgets/banner_carousel.dart';
 import 'package:incaxias_appcx/widgets/categorias_grid.dart';
@@ -84,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       // IMAGEM
                       Image.network(
-                        'https://caxias.ma.gov.br/wp-content/uploads/2021/08/90378C3E-969D-4834-A60F-B94EE358618A.jpeg',
+                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPeH_s8AmR3pbdI9gUGrKyLH_FuAVSiiUthAzW61D_3Q&s=10',
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
@@ -98,7 +99,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       // TEXTO OU BOTÃO CENTRAL
-                      Center(
+                      const Center(
                         child: Text(
                           'CULTURA',
                           style: TextStyle(

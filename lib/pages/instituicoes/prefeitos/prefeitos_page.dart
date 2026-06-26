@@ -40,11 +40,11 @@ class _PrefeitosPageState extends State<PrefeitosPage> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
@@ -80,6 +80,7 @@ class _PrefeitosPageState extends State<PrefeitosPage> {
                   );
                 }
 
+                // Filtragem pela busca digitada pelo usuário
                 final docs = snapshot.data!.docs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   final nome = (data['nome'] ?? '').toString().toLowerCase();
@@ -93,10 +94,16 @@ class _PrefeitosPageState extends State<PrefeitosPage> {
                   ),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
+                    final doc = docs[index];
+                    final docId =
+                        doc.id; // Captura o ID único do documento do Firebase
+                    final data = doc.data() as Map<String, dynamic>;
 
                     return GestureDetector(
                       onTap: () {
+                        // Injeta o ID único dentro do mapa de dados antes de enviar para a tela de detalhes
+                        data['id'] = docId;
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -113,11 +120,11 @@ class _PrefeitosPageState extends State<PrefeitosPage> {
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                               color: Colors.black12,
                               blurRadius: 6,
-                              offset: const Offset(0, 3),
+                              offset: Offset(0, 3),
                             ),
                           ],
                         ),
@@ -125,18 +132,17 @@ class _PrefeitosPageState extends State<PrefeitosPage> {
                           padding: const EdgeInsets.all(12.0),
                           child: Row(
                             children: [
+                              // Alterado a tag fixa do nome para uma tag combinada com o ID único do Firebase
                               Hero(
-                                tag: data['nome'] ?? '',
+                                tag: 'foto_prefe_$docId',
                                 child: CircleAvatar(
                                   radius: 35,
                                   backgroundColor: Colors.amber.shade100,
-                                  backgroundImage:
-                                      data['fotoUrl'] != null &&
+                                  backgroundImage: data['fotoUrl'] != null &&
                                           data['fotoUrl'].toString().isNotEmpty
                                       ? NetworkImage(data['fotoUrl'])
                                       : null,
-                                  child:
-                                      data['fotoUrl'] == null ||
+                                  child: data['fotoUrl'] == null ||
                                           data['fotoUrl'].toString().isEmpty
                                       ? const Icon(
                                           Icons.person,
@@ -186,11 +192,6 @@ class _PrefeitosPageState extends State<PrefeitosPage> {
                                     ),
                                   ],
                                 ),
-                              ),
-                              const Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.grey,
-                                size: 18,
                               ),
                             ],
                           ),

@@ -7,11 +7,27 @@ class CategoriasGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('categorias').snapshots(),
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance.collection('categorias').get(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 120,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const SizedBox(
+            height: 80,
+            child: Center(
+              child: Text(
+                'Nenhuma categoria encontrada.',
+              ),
+            ),
+          );
         }
 
         final categorias = snapshot.data!.docs;
@@ -19,6 +35,7 @@ class CategoriasGrid extends StatelessWidget {
         return GridView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
+          cacheExtent: 1000,
           padding: const EdgeInsets.all(8),
           itemCount: categorias.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -29,6 +46,7 @@ class CategoriasGrid extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             final data = categorias[index].data() as Map<String, dynamic>;
+
             final nome = data['nome'] ?? 'Sem nome';
             final iconeUrl = data['iconeUrl'] ?? '';
             final rota = data['rota'] ?? '';
@@ -45,11 +63,11 @@ class CategoriasGrid extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black12,
                           blurRadius: 6,
-                          offset: const Offset(0, 3),
+                          offset: Offset(0, 3),
                         ),
                       ],
                     ),
@@ -58,15 +76,18 @@ class CategoriasGrid extends StatelessWidget {
                       imageUrl: iconeUrl,
                       width: 40,
                       height: 40,
-                      placeholder: (context, url) => const Icon(Icons.image),
-                      errorWidget: (context, url, error) =>
+                      memCacheWidth: 120,
+                      fadeInDuration: const Duration(milliseconds: 150),
+                      placeholder: (_, __) => const Icon(Icons.image),
+                      errorWidget: (_, __, ___) =>
                           const Icon(Icons.broken_image),
                     ),
                   ),
-                  //const SizedBox(height: 6),
                   Text(
                     nome,
                     textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 8,
                       fontWeight: FontWeight.w600,

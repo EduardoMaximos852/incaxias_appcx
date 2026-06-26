@@ -2,14 +2,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class InstituicaoDetalhePage extends StatelessWidget {
+class AcademiaRotaPage extends StatelessWidget {
   final String nome;
   final String imagem;
   final String descricao;
   final String link;
   final String rota; // 🔸 rota dinâmica
 
-  const InstituicaoDetalhePage({
+  const AcademiaRotaPage({
     super.key,
     required this.nome,
     required this.imagem,

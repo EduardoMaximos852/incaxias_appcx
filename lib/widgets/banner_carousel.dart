@@ -18,15 +18,16 @@ class _BannerCarouselState extends State<BannerCarousel> {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('banner').snapshots(),
       builder: (context, snapshot) {
-        // ⏳ Carregando
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
           return const SizedBox(
             height: 200,
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
           );
         }
 
-        // ❌ Sem dados ou erro
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const SizedBox(
             height: 200,
@@ -41,81 +42,71 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
         final banners = snapshot.data!.docs;
 
-        return Column(
-          children: [
-            // ✅ Swiper correto
-            SizedBox(
-              height: 200,
-              child: Swiper(
-                itemCount: banners.length,
-                autoplay: true,
-                autoplayDelay: 3000,
-                duration: 800,
-                onIndexChanged: (index) {
-                  setState(() => _current = index);
-                },
-                itemBuilder: (context, index) {
-                  final data = banners[index].data() as Map<String, dynamic>;
-                  final imageUrl = data['imageUrl'] ?? '';
+        return SizedBox(
+          height: 220,
+          child: Column(
+            children: [
+              Expanded(
+                child: Swiper(
+                  itemCount: banners.length,
+                  autoplay: banners.length > 1,
+                  autoplayDelay: 3500,
+                  duration: 500,
+                  loop: banners.length > 1,
+                  onIndexChanged: (index) {
+                    if (_current != index && mounted) {
+                      setState(() {
+                        _current = index;
+                      });
+                    }
+                  },
+                  itemBuilder: (context, index) {
+                    final data = banners[index].data() as Map<String, dynamic>;
 
-                  return GestureDetector(
-                    onTap: () {
-                      // TODO: Ação ao clicar no banner
-                    },
-                    child: Padding(
+                    final imageUrl = data['imageUrl'] ?? '';
+
+                    return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: CachedNetworkImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
-                          width: double.infinity,
-                          placeholder: (context, url) => Container(
-                            color: Colors.grey.shade300,
-                            child: const Center(
-                              child: CircularProgressIndicator(),
-                            ),
+                          fadeInDuration: const Duration(milliseconds: 150),
+                          placeholder: (_, __) => Container(
+                            color: Colors.grey.shade200,
                           ),
-                          errorWidget: (context, url, error) => Container(
+                          errorWidget: (_, __, ___) => Container(
                             color: Colors.grey.shade300,
-                            child: const Icon(
-                              Icons.broken_image,
-                              size: 48,
-                              color: Colors.grey,
-                            ),
+                            child: const Icon(Icons.broken_image),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // ✅ Indicadores (dots)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: banners.asMap().entries.map((entry) {
-                final isActive = _current == entry.key;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: isActive ? 20.0 : 8.0,
-                  height: 8.0,
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 4,
-                    horizontal: 4,
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  banners.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _current == index ? 18 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _current == index
+                          ? Colors.blue
+                          : Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color:
-                        isActive ? Colors.blue.shade700 : Colors.grey.shade400,
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

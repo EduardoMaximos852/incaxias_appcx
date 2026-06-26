@@ -16,58 +16,68 @@ class _ClinicaPageState extends State<ClinicaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final clinicasRef = FirebaseFirestore.instance.collection('clinicas');
-
     return Scaffold(
+      backgroundColor: const Color(0xffF5F7FA),
       appBar: AppBar(
         backgroundColor: AppColors.primary,
-        title: AppText.title(
-          'Clínicas de Caxias',
-        ),
         centerTitle: true,
+        title: AppText.title('Clínicas de Caxias'),
       ),
       body: Column(
         children: [
-          // 🔍 CAMPO DE BUSCA
-          Padding(
-            padding: const EdgeInsets.all(10),
+          Container(
+            color: AppColors.primary,
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              16,
+            ),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Buscar por nome, bairro ou especialidade...',
+                hintText: 'Buscar clínica, bairro ou especialidade...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                isDense: true,
               ),
-              onChanged: (v) => setState(() => search = v.toLowerCase()),
+              onChanged: (value) {
+                setState(() {
+                  search = value.toLowerCase();
+                });
+              },
             ),
           ),
-
-          // 📋 LISTA
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: clinicasRef.snapshots(),
+              stream:
+                  FirebaseFirestore.instance.collection('clinicas').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return Center(
-                    child: AppText.body('Nenhuma clínica cadastrada.'),
+                    child: AppText.body(
+                      'Nenhuma clínica cadastrada.',
+                    ),
                   );
                 }
 
-                final clinicasFiltradas = snapshot.data!.docs.where((doc) {
+                final docs = snapshot.data!.docs.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
 
                   final nome = (data['nome'] ?? '').toString().toLowerCase();
+
                   final bairro =
                       (data['bairro'] ?? '').toString().toLowerCase();
+
                   final especialidade =
                       (data['especialidade'] ?? '').toString().toLowerCase();
 
@@ -77,25 +87,37 @@ class _ClinicaPageState extends State<ClinicaPage> {
                 }).toList();
 
                 return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: clinicasFiltradas.length,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    final doc = clinicasFiltradas[index];
+                    final doc = docs[index];
+
                     final data = doc.data() as Map<String, dynamic>;
 
-                    final fotoUrl = data['fotoUrl'] ?? '';
+                    final foto = data['fotoUrl'] ?? '';
+
                     final nome = data['nome'] ?? '';
+
                     final especialidade = data['especialidade'] ?? '';
-                    final endereco = data['endereco'] ?? '';
+
                     final bairro = data['bairro'] ?? '';
 
+                    final endereco = data['endereco'] ?? '';
+
                     return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      margin: const EdgeInsets.only(
+                        bottom: 14,
+                      ),
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(
+                          20,
+                        ),
                       ),
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(
+                          20,
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -107,60 +129,92 @@ class _ClinicaPageState extends State<ClinicaPage> {
                             ),
                           );
                         },
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ClipRRect(
-                              borderRadius: const BorderRadius.horizontal(
-                                left: Radius.circular(16),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(
+                                  20,
+                                ),
                               ),
-                              child: fotoUrl.isNotEmpty
+                              child: foto.isNotEmpty
                                   ? Image.network(
-                                      fotoUrl,
-                                      width: 100,
-                                      height: 100,
+                                      foto,
+                                      width: double.infinity,
+                                      height: 180,
                                       fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) {
+                                        return Container(
+                                          height: 180,
+                                          color: Colors.grey.shade200,
+                                          child: const Icon(
+                                            Icons.local_hospital,
+                                            size: 60,
+                                          ),
+                                        );
+                                      },
                                     )
                                   : Container(
-                                      width: 100,
-                                      height: 100,
-                                      color: Colors.grey[300],
-                                      child: const Icon(Icons.local_hospital),
+                                      height: 180,
+                                      color: Colors.grey.shade200,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.local_hospital,
+                                          size: 60,
+                                        ),
+                                      ),
                                     ),
                             ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AppText.body(
-                                      nome,
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AppText.subtitle(
+                                    nome,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
                                     ),
-                                    const SizedBox(height: 4),
-                                    AppText.body(
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50,
+                                      borderRadius: BorderRadius.circular(
+                                        20,
+                                      ),
+                                    ),
+                                    child: Text(
                                       especialidade,
+                                      style: TextStyle(
+                                        color: Colors.blue.shade700,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                    const SizedBox(height: 6),
-                                    AppText.body(
-                                      bairro,
-                                    ),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.location_on,
-                                          size: 18,
-                                          color: Colors.red,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.location_on,
+                                        color: Colors.red,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Expanded(
+                                        child: AppText.body(
+                                          bairro,
                                         ),
-                                        const SizedBox(width: 4),
-                                        Expanded(
-                                          child: AppText.body(
-                                            endereco,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  AppText.body(
+                                    endereco,
+                                  ),
+                                ],
                               ),
                             ),
                           ],

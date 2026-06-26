@@ -8,19 +8,29 @@ class TurismoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
           .collection('turismo')
           .orderBy('nome')
-          .snapshots(),
+          .get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const SizedBox(
+            height: 150,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text('Nenhum ponto turístico cadastrado.'),
+          return const SizedBox(
+            height: 100,
+            child: Center(
+              child: Text(
+                'Nenhum ponto turístico cadastrado.',
+              ),
+            ),
           );
         }
 
@@ -28,17 +38,19 @@ class TurismoPage extends StatelessWidget {
 
         return GridView.builder(
           shrinkWrap: true,
+          cacheExtent: 1000,
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.all(8),
+          itemCount: pontos.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             childAspectRatio: 0.8,
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
           ),
-          itemCount: pontos.length,
           itemBuilder: (context, index) {
             final doc = pontos[index];
+
             final nome = doc['nome'];
             final imagem = doc['imagem'];
 
@@ -48,7 +60,7 @@ class TurismoPage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => TurismoDetalhePage(
-                      docId: doc.id, // <-- ESSENCIAL!
+                      docId: doc.id,
                       nome: doc['nome'],
                       imagem: doc['imagem'],
                       descricao: doc['descricao'],
@@ -60,7 +72,7 @@ class TurismoPage extends StatelessWidget {
                 );
               },
               child: Card(
-                elevation: 4,
+                elevation: 3,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -68,32 +80,38 @@ class TurismoPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(12),
-                        ),
-                        child: CachedNetworkImage(
-                          imageUrl: imagem,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
+                      child: Hero(
+                        tag: doc.id,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                          child: CachedNetworkImage(
+                            imageUrl: imagem,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 500,
+                            fadeInDuration: const Duration(milliseconds: 150),
+                            placeholder: (_, __) => Container(
+                              color: Colors.grey.shade200,
+                            ),
+                            errorWidget: (_, __, ___) =>
+                                const Icon(Icons.error),
+                          ),
                         ),
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8),
                       child: Center(
                         child: Text(
                           nome,
                           textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 8,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
                         ),
                       ),
                     ),
